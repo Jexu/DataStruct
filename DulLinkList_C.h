@@ -1,22 +1,20 @@
-#pragma once
-
-#include<iostream>
-using namespace std;
-
+#ifndef _DUL_LINK_LIST_H
+#define _DUL_LINK_LIST_H
 namespace dll_c {
 	const int ERROR = -1;
-
+	template<typename T>
+	struct DLLNode
+	{
+		T data;
+		DLLNode *prior = NULL;
+		DLLNode *next = NULL;
+	};
 	template<typename T>
 	/*双向链表原型*/
 	struct DulLinkList
 	{
-		union
-		{
-			T data;
-			int length = 0;
-		};
-		DulLinkList *prior = NULL;
-		DulLinkList *next = NULL;
+		DLLNode<T> *head;
+		int length;
 	};
 
 	template<typename T>
@@ -27,9 +25,13 @@ namespace dll_c {
 		{
 			exit(ERROR);
 		}
+		dll.head = new DLLNode<T>;
+		if (!dll.head)
+		{
+			exit(ERROR);
+		}
+		dll.head->prior = NULL;
 		dll.length = 0;
-		dll.prior = NULL;
-		dll.next = NULL;
 	}
 
 	template<typename T>
@@ -40,18 +42,19 @@ namespace dll_c {
 		{
 			exit(ERROR);
 		}
-		DulLinkList<T> *p = &dll;
+		DLLNode<T> *p = dll.head;
 		while (p->next)
 		{
 			p = p->next;
 		}
-		DulLinkList<T> *newP = new DulLinkList<T>;
+		DLLNode<T> *newP = new DLLNode<T>;
 		newP->data = data;
 		newP->next = NULL;
 		newP->prior = p;
 		p->next = newP;
 		dll.length++;
 		p = NULL;
+		newP = NULL;
 	}
 
 	template<typename T>
@@ -67,13 +70,13 @@ namespace dll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = &dll;
+		DLLNode<T> *p = dll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		DulLinkList<T> *newP = new DulLinkList<T>;
+		DLLNode<T> *newP = new DLLNode<T>;
 		newP->data = data;
 		newP->next = p;
 		newP->prior = p->prior;
@@ -81,6 +84,7 @@ namespace dll_c {
 		p->prior = newP;
 		dll.length++;
 		p = NULL;
+		newP = NULL;
 	}
 	template<typename T>
 	/*插入元素到双向链表指定位置position之后，position>=1 && position<= length*/
@@ -95,13 +99,13 @@ namespace dll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = &dll;
+		DLLNode<T> *p = dll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		DulLinkList<T> *newP = new DulLinkList<T>;
+		DLLNode<T> *newP = new DLLNode<T>;
 		newP->data = data;
 		newP->next = p->next;
 		newP->prior = p;
@@ -112,11 +116,12 @@ namespace dll_c {
 		p->next = newP;
 		dll.length++;
 		p = NULL;
+		newP = NULL;
 	}
 
 	template<typename T>
 	/*获取指定位置position处的元素，position>=1 && position<=length*/
-	T getElement(DulLinkList<T> dll, long position)
+	T getElement(const DulLinkList<T> &dll, long position)
 	{
 		if (&dll == NULL)
 		{
@@ -127,7 +132,7 @@ namespace dll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = &dll;
+		const DLLNode<T> *p = dll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
@@ -138,14 +143,14 @@ namespace dll_c {
 
 	template<typename T>
 	/*查找给定元素在双向链表中第一次出现的位置，如果没有找到，则返回-1*/
-	long findElement(DulLinkList<T> dll, T data)
+	long findElement(const DulLinkList<T> &dll, T data)
 	{
 		if (&dll == NULL)
 		{
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = &dll;
+		const DLLNode<T> *p = dll.head;
 		while (p->next)
 		{
 			p = p->next;
@@ -168,16 +173,17 @@ namespace dll_c {
 		{
 			exit(ERROR);
 		}
-		DulLinkList<T> *p = &dll;
+		DLLNode<T> *p = dll.head;
 		while (p->next)
 		{
 			p = p->next;
 		}
-		DulLinkList<T> *freeP = p;
+		DLLNode<T> *freeP = p;
 		p->prior->next = p->next;
 		dll.length--;
 		delete freeP;
 		freeP = NULL;
+		p = NULL;
 	}
 
 	template<typename T>
@@ -193,13 +199,13 @@ namespace dll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = &dll;
+		DLLNode<T> *p = dll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		DulLinkList<T> *freeP = p;
+		DLLNode<T> *freeP = p;
 		p->prior->next = p->next;
 		if (position != dll.length)
 		{
@@ -208,6 +214,7 @@ namespace dll_c {
 		dll.length--;
 		delete freeP;
 		freeP = NULL;
+		p = NULL;
 	}
 
 	template<typename T>
@@ -224,3 +231,4 @@ namespace dll_c {
 		}
 	}
 }
+#endif

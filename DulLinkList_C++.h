@@ -1,7 +1,5 @@
-#pragma once
-#include<iostream>
-using namespace std;
-
+#ifndef _DUL_LINK_LIST_CPP_H
+#define _DUL_LINK_LIST_CPP_H
 namespace dll_cpp {
 	const int ERROR = -1;
 	template<typename T>
@@ -9,6 +7,7 @@ namespace dll_cpp {
 	{
 	public:
 		DulLinkList();
+		DulLinkList(DulLinkList &dll);
 		virtual ~DulLinkList();
 		void insertElement(T data);
 		void insertElement(T data, long position, int flag);
@@ -20,33 +19,55 @@ namespace dll_cpp {
 		long getLength();
 		//bool hasNext();
 		//bool hasPrevious();
-		T getData();
 		/*用来标识插入元素时，插入到指定position之前*/
 		static const int FLAG_INSERT_PRIOR = 1;
 		/*插入一个元素到双向链表中，默认插入到链表最末端*/
 		static const int FLAG_INSERT_NEXT = 2;
-		DulLinkList<T> *prior = NULL;
-		DulLinkList<T> *next = NULL;
 	private:
-		union
+		class DLLNode
 		{
+		public:
+			DLLNode()
+			{
+				this->next = NULL;
+				this->prior = NULL;
+			}
 			T data;
-			long length = 0;
+			DLLNode *next;
+			DLLNode *prior;
 		};
+		DLLNode *head;
+		int length;
 	};
 
 	template<typename T>
 	/*初始化双向链表--前驱，后驱指向NULL，length=0*/
 	DulLinkList<T>::DulLinkList()
 	{
+		this->head = new DLLNode();
+		if (!this->head)
+		{
+			exit(ERROR);
+		}
 		this->length = 0;
-		this->prior = NULL;
-		this->next = NULL;
+	}
+	template<typename T>
+	DulLinkList<T>::DulLinkList(DulLinkList &dll)
+	{
+		if (this->head)
+		{
+			delete this->head;
+		}
+		this->head = dll.head;
+		this->length = dll.length;
 	}
 	template<typename T>
 	DulLinkList<T>::~DulLinkList()
 	{
-
+		if (this->head)
+		{
+			delete this->head;
+		}
 	}
 	template<typename T>
 	
@@ -62,12 +83,12 @@ namespace dll_cpp {
 		{
 			exit(ERROR);
 		}
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next)
 		{
 			p = p->next;
 		}
-		DulLinkList<T> *newP = new DulLinkList<T>;
+		DLLNode *newP = new DLLNode();
 		newP->data = data;
 		newP->next = NULL;
 		newP->prior = p;
@@ -88,13 +109,13 @@ namespace dll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		DulLinkList<T> *newP = new DulLinkList<T>();
+		DLLNode *newP = new DLLNode();
 		newP->data = data;
 		switch (flag)
 		{
@@ -118,6 +139,7 @@ namespace dll_cpp {
 			break;
 		}
 		this->length++;
+		newP = NULL;
 		p = NULL;
 	}
 	template<typename T>
@@ -133,7 +155,7 @@ namespace dll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next && index < position)
 		{
 			p = p->next;
@@ -150,7 +172,7 @@ namespace dll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next)
 		{
 			p = p->next;
@@ -172,16 +194,17 @@ namespace dll_cpp {
 		{
 			exit(ERROR);
 		}
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next)
 		{
 			p = p->next;
 		}
-		DulLinkList<T> *freeP = p;
+		DLLNode *freeP = p;
 		p->prior->next = p->next;
 		this->length--;
 		delete freeP;
 		freeP = NULL;
+		p = NULL;
 	}
 	template<typename T>
 	/*删除双向链表中指定位置position处的元素，position>=1 && position<=length*/
@@ -196,13 +219,13 @@ namespace dll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		DulLinkList<T> *p = this;
+		DLLNode *p = this->head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		DulLinkList<T> *freeP = p;
+		DLLNode *freeP = p;
 		p->prior->next = p->next;
 		if (position != this->length)
 		{
@@ -211,6 +234,7 @@ namespace dll_cpp {
 		this->length--;
 		delete freeP;
 		freeP = NULL;
+		p = NULL;
 	}
 	template<typename T>
 	/*清空双向链表中的所有元素，只剩下一个头结点*/
@@ -235,16 +259,7 @@ namespace dll_cpp {
 		}
 		return this->length;
 	}
-	template<typename T>
-	/*获取当前节点上的元素*/
-	T DulLinkList<T>::getData()
-	{
-		if (!this)
-		{
-			exit(ERROR);
-		}
-		return this->data;
-	}
+	
 	/*template<typename T>
 	bool DulLinkList<T>::hasNext()
 	{
@@ -273,4 +288,5 @@ namespace dll_cpp {
 		return false;
 	}*/
 }
+#endif
 

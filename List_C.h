@@ -1,12 +1,12 @@
-#include<malloc.h>
-
+#ifndef _LIST_C_H
+#define _LIST_C_H
 namespace list_c
 {
+#define LIST_INIT_SIZE  100
+#define LIST_INCREASMENT  10
 	const int ERROR = -1;
 	template <typename T>
 	struct List {
-#define LIST_INIT_SIZE  100
-#define LIST_INCREASMENT  10
 		T *p = NULL;
 		int length = 0;
 		int size = 0;
@@ -26,12 +26,12 @@ namespace list_c
 
 	/*获取对应位置上的元素值---position>=0&&position<l.length*/
 	template <typename T>
-	T getElement(List<T> l, long position) {
+	T getElement(const List<T> &l, long position) {
 		if (&l == NULL || l.p == NULL)
 		{
 			exit(ERROR);
 		}
-		if (position <0 || position >= l.length)
+		if (position < 0 || position >= l.length)
 		{
 			exit(ERROR);
 		}
@@ -61,7 +61,7 @@ namespace list_c
 
 	/*将另一个线性表中所有元素一次性全加进去--l_child加到l_parent中*/
 	template <typename T>
-	void addAll(List<T> &l_parent, List<T> l_child) {
+	void addAll(List<T> &l_parent, const List<T> &l_child) {
 		if (&l_parent == NULL || l_parent.p == NULL || &l_child == NULL || l_child.p == NULL)
 		{
 			exit(ERROR);
@@ -79,7 +79,7 @@ namespace list_c
 		{
 			exit(ERROR);
 		}
-		if (position <0 || position >= l.length)
+		if (position < 0 || position >= l.length)
 		{
 			exit(ERROR);
 		}
@@ -99,13 +99,12 @@ namespace list_c
 			l.p = newP;
 			l.size -= LIST_INCREASMENT;
 		}
-
 		return e;
 	}
 
 	template<typename T>
 	/*查找给定元素在线性表中的第一次出现的位置,从0开始，若查找到无，返回-1*/
-	int findElement(List<T> l, T e)
+	int findElement(const List<T> l, T e)
 	{
 		if (&l == NULL || l.p == NULL)
 		{
@@ -138,11 +137,13 @@ namespace list_c
 		{
 			exit(ERROR);
 		}
+		free(l.p);
 		l.p = newP;
 		l.size = LIST_INIT_SIZE;
 		l.length = 0;
+		newP = NULL;
 	}
 }
-
+#endif
 
 

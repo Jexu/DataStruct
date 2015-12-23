@@ -1,16 +1,16 @@
 #pragma once
-#include<iostream>
-using namespace std;
-
+#ifndef _SINGEL_LINK_LIST_CPP_H
+#define _SINGEL_LINK_LIST_CPP_H
 namespace sll_cpp {
-
-
 	const int ERROR = -1;
+
 	template<typename T>
+	/*单向链表类*/
 	class SingelLinkList
 	{
 	public:
 		SingelLinkList();
+		SingelLinkList(SingelLinkList &sl);
 		virtual ~SingelLinkList();
 		void insertElement(T data);
 		void insertElement(T data, long position);
@@ -20,27 +20,69 @@ namespace sll_cpp {
 		int findElement(T data);
 		void clearSingelLinkList();
 		int getLength();
-		T getData();
-		SingelLinkList<T> *next = NULL;
 	private:
-		union {
+		/*单向链表结点类*/
+		class LNODE
+		{
+		public:
+			/*无参构造函数*/
+			LNODE()
+			{
+				this->next = NULL;
+			};
+			/*拷贝构造函数*/
+			LNODE(LNODE &ln)
+			{
+				if (this->next)
+				{
+					delete this->next;
+				}
+				this->next = next;
+				this->data = ln.data;
+			};
+			/*析构函数*/
+			~LNODE() {};
+			/*结点数据*/
 			T data;
-			int length = 0;
+			/*指向下一个结点的指针*/
+			LNODE *next;
 		};
+		int length = 0;
+		LNODE *head;
 	};
-
-
+	
 	template<typename T>
 	SingelLinkList<T>::SingelLinkList()
 	{
-		this->next = NULL;
+		this->head = new LNODE();
+		if (!this->head)
+		{
+			exit(ERROR);
+		}
 		this->length = 0;
 	}
-
+	template<typename T>
+	SingelLinkList<T>::SingelLinkList(SingelLinkList &sl)
+	{
+		if (&sl == NULL)
+		{
+			exit(ERROR);
+		}
+		if (this->head)
+		{
+			delete this->head;
+		}
+		this->head = sl.head;
+		this->length = sl.length;
+	}
 	template<typename T>
 	SingelLinkList<T>::~SingelLinkList()
 	{
-
+		if (this->head)
+		{
+			this->clearSingelLinkList();
+			delete this->head;
+		}
 	}
 
 	template<typename T>
@@ -51,12 +93,12 @@ namespace sll_cpp {
 		{
 			exit(ERROR);
 		}
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next)
 		{
 			p = p->next;
 		}
-		SingelLinkList<T> *newP = new SingelLinkList<T>();
+		LNODE *newP = new LNODE();
 		newP->data = data;
 		newP->next = NULL;
 		p->next = newP;
@@ -75,13 +117,13 @@ namespace sll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		SingelLinkList<T> *newP = new SingelLinkList<T>();
+		LNODE *newP = new LNODE();
 		newP->data = data;
 		newP->next = p->next;
 		p->next = newP;
@@ -92,17 +134,17 @@ namespace sll_cpp {
 	/*默认删除最后一个元素*/
 	void SingelLinkList<T>::deleteElement()
 	{
-		if (this == NULL || this->length <= 0)
+		if (!this || this->length <= 0)
 		{
 			exit(ERROR);
 		}
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next->next)
 		{
 			//将指针指向链表尾部
 			p = p->next;
 		}
-		SingelLinkList<T> *freeP = p->next;
+		LNODE *freeP = p->next;
 		p->next = p->next->next;
 		this->length--;
 		delete freeP;
@@ -112,7 +154,7 @@ namespace sll_cpp {
 	/*删除第position个位置上的值，且position>0 && position<=length；从头结点后第一个值开始*/
 	void SingelLinkList<T>::deleteElement(long position)
 	{
-		if (this == NULL)
+		if (!this)
 		{
 			exit(ERROR);
 		}
@@ -121,13 +163,13 @@ namespace sll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next->next && index < position - 1)
 		{
 			p = p->next;
 			index++;
 		}
-		SingelLinkList<T> *freeP = p->next;
+		LNODE *freeP = p->next;
 		p->next = p->next->next;
 		this->length--;
 		delete freeP;
@@ -137,7 +179,7 @@ namespace sll_cpp {
 	/*获取第position位置上的元素；position>0&&position<=length*/
 	T SingelLinkList<T>::getElement(long position)
 	{
-		if (this == NULL)
+		if (!this)
 		{
 			exit(ERROR);
 		}
@@ -146,13 +188,13 @@ namespace sll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		return p->getData();
+		return p->data;
 	}
 
 	template<typename T>
@@ -164,7 +206,7 @@ namespace sll_cpp {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = this;
+		LNODE *p = this->head;
 		while (p->next)
 		{
 			p = p->next;
@@ -182,7 +224,7 @@ namespace sll_cpp {
 	/*清空链表*/
 	void SingelLinkList<T>::clearSingelLinkList()
 	{
-		if (this == NULL)
+		if (!this)
 		{
 			exit(ERROR);
 		}
@@ -196,18 +238,11 @@ namespace sll_cpp {
 	/*获得链表长度*/
 	int SingelLinkList<T>::getLength()
 	{
-		if (this == NULL)
+		if (!this)
 		{
 			exit(ERROR);
 		}
 		return this->length;
 	}
-
-	template<typename T>
-	/*获得当前结点上的数据*/
-	T SingelLinkList<T>::getData()
-	{
-		return this->data;
-	}
-
 }
+#endif

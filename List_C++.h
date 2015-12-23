@@ -1,6 +1,6 @@
-#pragma once
+#ifndef _LIST_CPP_H
+#define _LIST_CPP_H
 #include<stdarg.h>
-using namespace std;
 namespace list_cpp {
 	const int ERROR = -1;
 	template <typename T>
@@ -8,16 +8,16 @@ namespace list_cpp {
 	{
 	public:
 		List();
-		List(int n,T start, ...);
+		List(List &l);
+		List(int n, T start, ...);
 		T getElement(long position);
 		void addElement(T e);
-		void addAll(List<T> &l);
+		void addAll(const List<T> &l);
 		T removeElement(long position);
 		int findElement(T e);
 		void clearList();
 		int getLength();
 		virtual ~List();
-
 	private:
 		T *p = NULL;
 		int length = 0;
@@ -36,8 +36,6 @@ namespace list_cpp {
 
 	call testFunc之类的(稍后详述)
 
-
-
 2、编译阶段，在main函数中发现了testFunc的引用，但是main.obj中没有相关的
 
 	 可执行代码（编译器认为该函数在别处定义，这就是为什么需要链接也就是
@@ -45,8 +43,6 @@ namespace list_cpp {
 	 LINK了，在main中虽然引用到testFunc但是只提供了一个call虚拟地址而没有
 
 	 实际的执行代码）
-
-
 
 3、链接阶段，将各个模块(编译期间生成的很多*.obj文件)组织起来
 
@@ -56,15 +52,9 @@ namespace list_cpp {
 
 	 继续执行后续语句）
 
-
-
 4、模板在编译期间是不生成具体代码的，除非有特化的引用，比如上述的
 
 	 testFunc(double d)，这里将参数实例化为double
-
-
-
-
 
 详细分析
 
@@ -75,8 +65,6 @@ namespace list_cpp {
 分别编译为MyTemplate.obj和Main.obj
 
 (根据你编译器的设置可能会有不同，这是按照默认设置生成的中间文件名称)
-
-
 
 在编译MyTemplate的过程中，没有找到任何特化实例（头文件为模板声明，
 
@@ -90,8 +78,6 @@ namespace list_cpp {
 
 链接阶段，在别的模块中找到testFunc的定义
 
-
-
 于是在LINK阶段需要查找testFunc的实现定义，不幸的是，找不到了，于是出现
 
 链接错误
@@ -100,11 +86,7 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 
  (??$testFunc@N@@YAXAAN@Z)，该符号在函数 _main 中被引用
 
-
-
 那么，如何解决这个问题呢？
-
-
 
 至少有以下几种方法：
 
@@ -126,8 +108,6 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 
 
 
-
-
 /*一句话，对于定义的各种模板类，类的声明和定义必须在同一个文件中完成，不能分在两个文件中*/
 
 	template <typename T>
@@ -141,10 +121,20 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 		this->length = 0;
 		this->size = List::LIST_INIT_SIZE_;
 	}
-
+	template <typename T>
+	List<T>::List(List &l)
+	{
+		if (this->p)
+		{
+			free(this->p);
+		}
+		this->p = l.p;
+		this->length = l.length;
+		this->size = l.size;
+	}
 	template<typename T>
 	/*变长参数列表的构造函数，n为变长参数个数，start以及...为变长参数，用这些参数来生成list中元素*/
-	List<T>::List(int n,T start,...)
+	List<T>::List(int n, T start, ...)
 	{
 		this->p = (T *)malloc(List::LIST_INIT_SIZE_*sizeof(T));
 		if (!this->p)
@@ -165,8 +155,11 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 	template <typename T>
 	List<T>::~List()
 	{
+		if (this->p)
+		{
+			free(this->p);
+		}
 	}
-
 	/*线性表初始大小*/
 	template <typename T>
 	const int List<T>::LIST_INIT_SIZE_ = 10;
@@ -188,7 +181,6 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 		}
 		return *(this->p + position);
 	}
-
 	template <typename T>
 	/*在线性表末尾添加一个元素*/
 	void List<T>::addElement(T e) {
@@ -210,10 +202,9 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 		*(this->p + this->length) = e;
 		this->length++;
 	}
-
 	template <typename T>
 	/*将另一个线性表中的所有元素全部加到当前线性表中*/
-	void List<T>::addAll(List<T> &l) {
+	void List<T>::addAll(const List<T> &l) {
 		if (this->p == NULL || &l == NULL || l.p == NULL)
 		{
 			exit(ERROR);
@@ -223,7 +214,6 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 			addElement(l.getElement(i));
 		}
 	}
-
 	template <typename T>
 	/*移除对应位置上的元素值，position>=0&&position<length*/
 	T List<T>::removeElement(long position) {
@@ -250,11 +240,10 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 			}
 			this->p = newP;
 			this->size -= List::LIST_INCREASMENT_;
+			newP = NULL;
 		}
-
 		return e;
 	}
-
 	template<typename T>
 	/*查找给定元素在线性表中的第一次出现的位置，从0开始，若查找到无，返回-1*/
 	int List<T>::findElement(T e)
@@ -269,12 +258,9 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 			{
 				return i;
 			}
-			
 		}
 		return -1;
 	}
-
-
 	template <typename T>
 	/*清空当前线性表*/
 	void List<T>::clearList() {
@@ -291,11 +277,12 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 		{
 			exit(ERROR);
 		}
+		free(this->p);
 		this->p = newP;
 		this->size = List::LIST_INIT_SIZE_;
 		this->length = 0;
+		newP = NULL;
 	}
-
 	template <typename T>
 	/*获取当前线性表中元素个数*/
 	int List<T>::getLength() {
@@ -305,5 +292,5 @@ error LNK2019: 无法解析的外部符号 "void __cdecl testFunc<double>(double &)"
 		}
 		return this->length;
 	}
-
 }
+#endif

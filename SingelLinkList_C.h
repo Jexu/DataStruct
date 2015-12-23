@@ -1,6 +1,6 @@
 #pragma once
-#include<iostream>
-using namespace std;
+#ifndef _SINGEL_LINK_LIST_C_H
+#define _SINGEL_LINK_LIST_C_H
 namespace sll_c {
 	/*插入元素时候标记，升序插入*/
 	#define FLAG_ORDER_ASC 1;
@@ -8,14 +8,16 @@ namespace sll_c {
 	#define FLAG_ORDER_DESC 2;
 	const int ERROR = -1;
 	template <typename T>
+	struct SLLNode
+	{
+		T data;
+		SLLNode *next = NULL;
+	};
+	template<typename T>
 	struct SingelLinkList
 	{
-		union
-		{
-			T date;
-			int length = 0;
-		};
-		SingelLinkList *next = NULL;
+		SLLNode<T> *head;
+		int length;
 	};
 
 	/*创建带头结点的链表，初始化就是创建一个空头*/
@@ -26,38 +28,43 @@ namespace sll_c {
 		{
 			exit(ERROR);
 		}
-		sll.next = NULL;
+		sll.head = new SLLNode<T>;
+		if (!sll.head)
+		{
+			exit(ERROR);
+		}
 		sll.length = 0;
 	}
 
 	template <typename T>
 	/*默认插到末尾,传入链表的头引用*/
-	void insertElement(SingelLinkList<T> &sll, T date)
+	void insertElement(SingelLinkList<T> &sll, T data)
 	{
 		if (&sll == NULL)
 		{
 			exit(ERROR);
 		}
-		SingelLinkList<T> *p = &sll;
+		SLLNode<T> *p = sll.head;
 		while (p->next)
 		{
 			//将指针指向链表尾部
 			p = p->next;
 		}
-		SingelLinkList<T> *newP = new SingelLinkList<T>;
+		SLLNode<T> *newP = new SLLNode<T>;
 		if (!newP)
 		{
 			exit(ERROR);
 		}
-		newP->date = date;
+		newP->data = data;
 		newP->next = NULL;
 		sll.length++;
 		p->next = newP;
+		newP = NULL;
 	}
 
 	template <typename T>
 	/*插入到指定位置，传入链表头引用,规定插入值为插入到第position个值之后，且position>=0 && position<=length；0表示插入到头结点之后*/
-	void insertElement(SingelLinkList<T> &sll, T date, long position)
+	void insertElement(SingelLinkList<T> &sll, T data, long position)
 	{
 		if (&sll == NULL)
 		{
@@ -68,17 +75,18 @@ namespace sll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = &sll;
+		SLLNode<T> *p = sll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		SingelLinkList<T> *newP = new SingelLinkList<T>;
-		newP->date = date;
+		SLLNode<T> *newP = new SLLNode<T>;
+		newP->data = data;
 		newP->next = p->next;
 		p->next = newP;
 		sll.length++;
+		newP = NULL;
 	}
 	template<typename T>
 	/*插入元素到单向链表中，升序（FLAG_ORDER_ASC）或者降序（FLAG_ORDER_DESC）*/
@@ -88,19 +96,19 @@ namespace sll_c {
 		{
 			exit(ERROR);
 		}
-		SingelLinkList<T> *p = &sll;
+		SLLNode<T> *p = sll.head;
 		switch (flag)
 		{
 		case FLAG_ORDER_ASC:
 			while (p->next)
 			{
 				p = p->next;
-				if (p->date <= data)
+				if (p->data <= data)
 				{
 					if (p->next)
 					{
 						//表示还不是最后一个节点
-						if (p->next->date >= data)
+						if (p->next->data >= data)
 						{
 							//插到p后面
 						}
@@ -131,13 +139,13 @@ namespace sll_c {
 		{
 			exit(ERROR);
 		}
-		SingelLinkList<T> *p = &sll;
+		SLLNode<T> *p = sll.head;
 		while (p->next->next)
 		{
 			//将指针指向链表尾部
 			p = p->next;
 		}
-		SingelLinkList<T> *freeP = p->next;
+		SLLNode<T> *freeP = p->next;
 		p->next = p->next->next;
 		sll.length--;
 		delete freeP;
@@ -157,13 +165,13 @@ namespace sll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = &sll;
+		SLLNode<T> *p = sll.head;
 		while (p->next->next && index < position - 1)
 		{
 			p = p->next;
 			index++;
 		}
-		SingelLinkList<T> *freeP = p->next;
+		SLLNode<T> *freeP = p->next;
 		p->next = p->next->next;
 		sll.length--;
 		delete freeP;
@@ -172,7 +180,7 @@ namespace sll_c {
 
 	template<typename T>
 	/*获取第position位置上的元素；position>0&&position<=length*/
-	T getElement(SingelLinkList<T> sll, long position)
+	T getElement(const SingelLinkList<T> &sll, long position)
 	{
 		if (&sll == NULL)
 		{
@@ -183,30 +191,30 @@ namespace sll_c {
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = &sll;
+		const SLLNode<T> *p = sll.head;
 		while (p->next && index < position)
 		{
 			p = p->next;
 			index++;
 		}
-		return p->date;
+		return p->data;
 	}
 
 	template<typename T>
 	/*查找给定元素在链表中出现的第一次位置，position>=1 && position<=length；如果没找到，则返回-1*/
-	int findElement(SingelLinkList<T> sll, T data)
+	int findElement(const SingelLinkList<T> &sll, T data)
 	{
 		if (&sll == NULL)
 		{
 			exit(ERROR);
 		}
 		int index = 0;
-		SingelLinkList<T> *p = &sll;
+		const SLLNode<T> *p = sll.head;
 		while (p->next)
 		{
 			p = p->next;
 			index++;
-			if (p->date == data)
+			if (p->data == data)
 			{
 				p = NULL;
 				return index;
@@ -229,3 +237,4 @@ namespace sll_c {
 		}
 	}
 }
+#endif
