@@ -1,12 +1,9 @@
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _CYCLE_QUEUE_C_H
+#define _CYCLE_QUEUE_C_H
 namespace cq_c
 {
-	const int ERROR = -1;
 #define INIT_QUEUE_SIZE 100
-
+	const int ERROR = -1;
 	template<typename T>
 	struct CycleQueue
 	{
@@ -28,18 +25,26 @@ namespace cq_c
 		{
 			exit(ERROR);
 		}
-		cq.base = (T *)malloc(INIT_QUEUE_SIZE*sizeof(T));
-		if (!cq.base)
+		if (cq.base)
 		{
-			exit (ERROR);
+			cq.front = cq.rear = 0;
+			cq.length = 0;
 		}
-		cq.front = cq.rear = 0;
-		cq.length = 0;
+		else
+		{
+			cq.base = new T[INIT_QUEUE_SIZE];
+			if (!cq.base)
+			{
+				exit (ERROR);
+			}
+			cq.front = cq.rear = 0;
+			cq.length = 0;
+		}
 	}
 
 	template<typename T>
 	/*获取队列头元素值，获取前应该先检查队空*/
-	T getHead(CycleQueue<T> cq)
+	T getHead(const CycleQueue<T> &cq)
 	{
 		if (&cq == NULL || !cq.base || cq.length == 0)
 		{
@@ -86,7 +91,6 @@ namespace cq_c
 		cq.front = cq.rear = 0;
 		cq.length = 0;
 	}
-
 	template<typename T>
 	/*判断队列是否为空*/
 	bool isQueueEmpty(CycleQueue<T> cq)
@@ -109,3 +113,4 @@ namespace cq_c
 		return cq.length == INIT_QUEUE_SIZE ? true : false;
 	}
 }
+#endif

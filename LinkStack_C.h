@@ -1,12 +1,8 @@
-#pragma once
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _LINK_STACK_C_H
+#define _LINK_STACK_C_H
 namespace linkS_c
 {
 	const int ERROR = -1;
-	
 	template<typename T>
 	/*栈中每个元素数据类型---为一个带指针的数据域*/
 	struct SNode
@@ -14,7 +10,6 @@ namespace linkS_c
 		SNode *next = NULL;
 		T data;
 	};
-
 	template<typename T>
 	/*链式栈的数据结构原型*/
 	struct LinkStack
@@ -26,7 +21,6 @@ namespace linkS_c
 		/*栈中当前元素个数*/
 		int length = 0;
 	};
-
 	template<typename T>
 	/*初始化栈*/
 	void initStack(LinkStack<T> &ls)
@@ -35,6 +29,7 @@ namespace linkS_c
 		{
 			exit(ERROR);
 		}
+		/*存在内存泄露，应该先释放原有资源*/
 		SNode<T> *base = new SNode<T>;
 		if (!base)
 		{
@@ -44,11 +39,11 @@ namespace linkS_c
 		ls.base = base;
 		ls.top = ls.base;
 		ls.length = 0;
+		base = NULL;
 	}
-
 	template<typename T>
 	/*获取当前栈顶的元素值*/
-	T getTop(LinkStack<T> ls)
+	T getTop(const LinkStack<T> &ls)
 	{
 		if (&ls == NULL)
 		{
@@ -60,7 +55,6 @@ namespace linkS_c
 		}
 		return ls.top->next->data;
 	}
-
 	template<typename T>
 	/*进栈操作，将元素压入栈顶*/
 	void push(LinkStack<T> &ls, T data)
@@ -78,8 +72,8 @@ namespace linkS_c
 		newTop->next = ls.top;
 		ls.top = newTop;
 		ls.length++;
+		newTop = NULL;
 	}
-
 	template<typename T>
 	/*出栈操作，将栈顶元素弹出*/
 	T pop(LinkStack<T> &ls)
@@ -100,7 +94,6 @@ namespace linkS_c
 		ls.length--;
 		return data;
 	}
-
 	template<typename T>
 	/*清空栈中所有元素*/
 	void clearStack(LinkStack<T> &ls)
@@ -122,5 +115,5 @@ namespace linkS_c
 		}
 		ls.length = 0;
 	}
-
 }
+#endif

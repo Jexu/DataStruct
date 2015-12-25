@@ -1,22 +1,21 @@
-#pragma once
-#include<iostream>
-using namespace std;
-
+#ifndef _LIST_STACK_CPP_H
+#define _LIST_STACK_CPP_H
 namespace ls_cpp
 {
 	const int ERROR = -1;
-
 	template<typename T>
 	class ListStack
 	{
 	public:
 		ListStack();
+		ListStack(ListStack &ls);
 		virtual ~ListStack();
 		T getTop();
 		void push(T e);
 		T pop();
 		void clearStack();
 		int getLength();
+		ListStack& operator=(ListStack &ls);
 	private:
 		T *base = NULL;
 		T *top = NULL;
@@ -43,12 +42,37 @@ namespace ls_cpp
 		this->stackSize = ListStack<T>::INIT_STACK_SIZE_;
 		this->length = 0;
 	}
-
 	template<typename T>
+	/*拷贝构造函数*/
+	ListStack<T>::ListStack(ListStack &ls)
+	{
+		if (this->base)
+		{
+			free(this->base);
+		}
+		this->base = (T *)malloc(ls.stackSize*sizeof(T));
+		if (!this->base)
+		{
+			exit(ERROR);
+		}
+		this->top = this->base;
+		for (int i = 0; i < ls.getLength(); i++)
+		{
+			*this->top++ = *(ls.base + i);
+		}
+		this->stackSize = ls.stackSize;
+		this->length = ls.getLength();
+	}
+	template<typename T>
+	/*析构函数*/
 	ListStack<T>::~ListStack()
 	{
+		if (this->base)
+		{
+			free(this->base);
+			this->base = this->top = NULL;
+		}
 	}
-
 	template<typename T>
 	/*获取当前栈顶的元素值*/
 	T ListStack<T>::getTop()
@@ -63,7 +87,6 @@ namespace ls_cpp
 		}
 		return *(this->top - 1);
 	}
-
 	template<typename T>
 	/*进栈操作，将元素压入栈顶*/
 	void ListStack<T>::push(T e)
@@ -82,11 +105,11 @@ namespace ls_cpp
 			this->base = newBase;
 			this->top = this->base + this->stackSize;
 			this->stackSize += ListStack<T>::STACK_INCREASMENT_;
+			newBase = NULL;
 		}
 		*this->top++ = e;
 		this->length++;
 	}
-
 	template<typename T>
 	/*出栈操作，将栈顶元素弹出*/
 	T ListStack<T>::pop()
@@ -114,10 +137,10 @@ namespace ls_cpp
 			this->base = newBase;
 			this->top = this->base + distance;
 			this->stackSize -= ListStack<T>::STACK_INCREASMENT_;
+			newBase = NULL;
 		}
 		return e;
 	}
-
 	template<typename T>
 	/*获得当前栈中元素个数*/
 	int ListStack<T>::getLength()
@@ -128,7 +151,6 @@ namespace ls_cpp
 		}
 		return this->length;
 	}
-
 	template<typename T>
 	/*清空栈中所有元素*/
 	void ListStack<T>::clearStack()
@@ -141,10 +163,43 @@ namespace ls_cpp
 		{
 			exit(ERROR);
 		}
+		if (this->stackSize > ListStack<T>::INIT_STACK_SIZE_)
+		{
+			T *newBase = (T *)realloc(this->base, INIT_STACK_SIZE_*(sizeof(T)));
+			if (!newBase)
+			{
+				exit(ERROR);
+			}
+			this->base = newBase;
+			newBase = NULL;
+		}
 		this->top = this->base;
 		this->length = 0;
 		this->stackSize = ListStack<T>::INIT_STACK_SIZE_;
 	}
+	template<typename T>
+	/*=操作符重载*/
+	ListStack<T>& ListStack<T>::operator=(ListStack &ls)
+	{
+		if (this->base)
+		{
+			free(this->base);
+		}
+		this->base = (T *)malloc(ls.stackSize * sizeof(T));
+		if (!this->base)
+		{
+			exit(ERROR);
+		}
+		this->top = this->base;
+		this->stackSize = ls.stackSize;
+		this->length = ls.getLength();
+		for (int i = 0; i < ls.getLength(); i++)
+		{
+			*this->top++ = *(ls.base + i);
+		}
+		return *this;
+	}
 }
+#endif
 
 

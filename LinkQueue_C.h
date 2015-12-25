@@ -1,12 +1,8 @@
-#pragma once
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _LINK_QUEUE_C_H
+#define _LINK_QUEUE_C_H
 namespace linkQ_c
 {
 	const int ERROR = -1;
-
 	template<typename T>
 	/*队列中每个元素数据类型---为一个带指针的数据域*/
 	struct SNode
@@ -44,13 +40,14 @@ namespace linkQ_c
 		lq.rear = rear;
 		lq.front = lq.rear;
 		lq.length = 0;
+		rear = NULL;
 	}
 
 	template<typename T>
 	/*获取当前队列头的元素值*/
-	T getHead(LinkQueue<T> lq)
+	T getHead(const LinkQueue<T> &lq)
 	{
-		if (&lq == NULL)
+		if (&lq == NULL || lq.front == NULL ||lq.rear == NULL)
 		{
 			exit(ERROR);
 		}
@@ -65,7 +62,7 @@ namespace linkQ_c
 	/*进队操作，将元素压入队列尾*/
 	void inQueue(LinkQueue<T> &lq, T data)
 	{
-		if (&lq == NULL)
+		if (&lq == NULL || lq.front == NULL || lq.rear == NULL)
 		{
 			exit(ERROR);
 		}
@@ -79,13 +76,14 @@ namespace linkQ_c
 		lq.rear->next = newRear;
 		lq.rear = newRear;
 		lq.length++;
+		newRear = NULL;
 	}
 
 	template<typename T>
 	/*出队操作，将队头元素弹出*/
 	T OutQueue(LinkQueue<T> &lq)
 	{
-		if (&lq == NULL)
+		if (&lq == NULL || lq.front == NULL || lq.rear == NULL)
 		{
 			exit(ERROR);
 		}
@@ -106,7 +104,7 @@ namespace linkQ_c
 	/*清空队列中所有元素*/
 	void clearQueue(LinkQueue<T> &lq)
 	{
-		if (&lq == NULL)
+		if (&lq == NULL || lq.front == NULL || lq.rear == NULL)
 		{
 			exit(ERROR);
 		}
@@ -123,5 +121,5 @@ namespace linkQ_c
 		}
 		lq.length = 0;
 	}
-
 }
+#endif

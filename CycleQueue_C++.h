@@ -1,8 +1,5 @@
-#pragma once
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _CYCLE_QUEUE_CPP_H
+#define _CYCLE_QUEUE_CPP_H
 namespace cq_cpp
 {	
 	const int ERROR = -1;
@@ -15,6 +12,8 @@ namespace cq_cpp
 		CycleQueue();
 		/*指定构造对应大小的循环队列*/
 		CycleQueue(int queueSize);
+		/*拷贝构造函数*/
+		CycleQueue(CycleQueue &cq);
 		/*析构函数，销毁循环队列*/
 		virtual ~CycleQueue();
 		/*获取队列头元素值，获取前应该先检查队空*/
@@ -31,6 +30,8 @@ namespace cq_cpp
 		bool isQueueEmpty();
 		/*判断队列是否满*/
 		bool isQueueFull();
+		/*=操作符重载*/
+		CycleQueue& operator=(CycleQueue &cq);
 	private:
 		/*指向队列基地址的指针*/
 		T *base = NULL;
@@ -45,8 +46,6 @@ namespace cq_cpp
 		/*默认构造循环队列大小为100*/
 		static const int I_Q_S = 100;
 	};
-
-
 	template<typename T>
 	CycleQueue<T>::CycleQueue()
 	{
@@ -54,7 +53,7 @@ namespace cq_cpp
 		{
 			exit(ERROR);
 		}
-		this->base = (T *)malloc(CycleQueue<T>::I_Q_S*sizeof(T));
+		this->base = new T[I_Q_S];
 		if (!this->base)
 		{
 			exit(ERROR);
@@ -71,7 +70,7 @@ namespace cq_cpp
 		{
 			exit(ERROR);
 		}
-		this->base = (T *)malloc(CycleQueue<T>::queueSize*sizeof(T));
+		this->base = new T[queueSize];
 		if (!this->base)
 		{
 			exit(ERROR);
@@ -80,13 +79,46 @@ namespace cq_cpp
 		this->length = 0;
 		this->init_queue_size = queueSize;
 	}
+	template<typename T>
+	CycleQueue<T>::CycleQueue(CycleQueue &cq)
+	{
+		if (!this)
+		{
+			exit(ERROR);
+		}
+		if (this->init_queue_size != cq.init_queue_size)
+		{
+			if (this->base)
+			{
+				delete[] this->base;
+			}
+			this->base = new T[cq.init_queue_size];
+			if (!this->base)
+			{
+				exit(ERROR);
+			}
+			this->front = this->rear = 0;
+			this->init_queue_size = cq.init_queue_size;
+		}
+		else if(this->base && this->init_queue_size == cq.init_queue_size)
+		{
+			this->front = this->rear = 0;
+		}
+		for (int i = 0; i < cq.length; i++)
+		{
+			*(this->base + (cq.front + i)%cq.init_queue_size)  = *(cq.base + (cq.front + i) % cq.init_queue_size);
+		}
+		this->front = cq.front;
+		this->rear = cq.rear;
+		this->length = cq.length;
+	}
 
 	template<typename T>
 	CycleQueue<T>::~CycleQueue()
 	{
 		if (this && this->base)
 		{
-			delete this->base;
+			delete[] this->base;
 		}
 	}
 
@@ -165,7 +197,41 @@ namespace cq_cpp
 		}
 		return this->length == this->init_queue_size ? true : false;
 	}
-	
+	template<typename T>
+	CycleQueue<T>& CycleQueue<T>::operator=(CycleQueue &cq)
+	{
+		if (!this)
+		{
+			exit(ERROR);
+		}
+		if (this->init_queue_size != cq.init_queue_size)
+		{
+			if (this->base)
+			{
+				delete[] this->base;
+			}
+			this->base = new T[cq.init_queue_size];
+			if (!this->base)
+			{
+				exit(ERROR);
+			}
+			this->front = this->rear = 0;
+			this->init_queue_size = cq.init_queue_size;
+		}
+		else if (this->base && this->init_queue_size == cq.init_queue_size)
+		{
+			this->front = this->rear = 0;
+		}
+		for (int i = 0; i < cq.length; i++)
+		{
+			*(this->base + (cq.front + i) % cq.init_queue_size) = *(cq.base + (cq.front + i) % cq.init_queue_size);
+		}
+		this->front = cq.front;
+		this->rear = cq.rear;
+		this->length = cq.length;
+		return *this;
+	}
 }
+#endif
 
 

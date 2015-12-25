@@ -1,8 +1,5 @@
-#pragma once
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _LINK_STACK_CPP_H
+#define _LINK_STACK_CPP_H
 namespace linkS_cpp
 {
 	const int ERROR = -1;
@@ -11,22 +8,24 @@ namespace linkS_cpp
 	{
 	public:
 		LinkStack();
+		LinkStack(LinkStack &ls);
 		virtual ~LinkStack();
 		T getTop();
 		void push(T data);
 		T pop();
 		void clearStack();
 		int getLength();
+		LinkStack& operator=(LinkStack &ls);
 	private:
 		template<typename T>
 		/*内部类*/
 		class SNode
 		{
 		public:
-			SNode() {};
+			SNode() { this->next = NULL; };
 			virtual ~SNode() {};
 			T data;
-			SNode<T> *next = NULL;
+			SNode<T> *next;
 		};
 		SNode<T> *base = NULL;
 		SNode<T> *top = NULL;
@@ -50,13 +49,57 @@ namespace linkS_cpp
 		this->base = base;
 		this->top = this->base;
 		this->length = 0;
+		base = NULL;
+	}
+	template<typename T>
+	LinkStack<T>::LinkStack(LinkStack &ls)
+	{
+		if (!this)
+		{
+			exit(ERROR);
+		}
+		if (this->base)
+		{
+			this->clearStack();
+		}
+		else
+		{
+			SNode<T> *base = new SNode<T>();
+			if (!base)
+			{
+				exit(ERROR);
+			}
+			base->next = NULL;
+			this->base = base;
+			this->top = this->base;
+			this->length = 0;
+			base = NULL;
+		}
+		SNode<T> *ls_top = ls.top;
+		while (ls_top->next)
+		{
+			ls_top = ls_top->next;
+			SNode<T> *newBase = new SNode<T>();
+			newBase->next = NULL;
+			newBase->data = ls_top->data;
+			this->base->next = newBase;
+			this->base = newBase;
+			newBase = NULL;
+			this->length++;
+		}
+		ls_top = NULL;
 	}
 
 	template<typename T>
 	LinkStack<T>::~LinkStack()
 	{
+		if (this->base!=NULL)
+		{
+			this->clearStack();
+		delete this->base;
+		this->base = this->top = NULL;
+		}
 	}
-
 	template<typename T>
 	/*获取当前栈顶的元素值*/
 	T LinkStack<T>::getTop()
@@ -76,7 +119,7 @@ namespace linkS_cpp
 	/*进栈操作，将元素压入栈顶*/
 	void LinkStack<T>::push(T data)
 	{
-		if (!this)
+		if (!this || this->base == NULL)
 		{
 			exit(ERROR);
 		}
@@ -89,13 +132,13 @@ namespace linkS_cpp
 		newTop->next = this->top;
 		this->top = newTop;
 		this->length++;
+		newTop = NULL;
 	}
-
 	template<typename T>
 	/*出栈操作，将栈顶元素弹出*/
 	T LinkStack<T>::pop()
 	{
-		if (!this)
+		if (!this || this->base == NULL)
 		{
 			exit(ERROR);
 		}
@@ -111,12 +154,11 @@ namespace linkS_cpp
 		this->length--;
 		return data;
 	}
-
 	template<typename T>
 	/*清空栈中所有元素*/
 	void LinkStack<T>::clearStack()
 	{
-		if (!this)
+		if (!this || this->base == NULL)
 		{
 			exit(ERROR);
 		}
@@ -144,7 +186,46 @@ namespace linkS_cpp
 		}
 		return this->length;
 	}
-
+	template<typename T>
+	/*=操作符重载*/
+	LinkStack<T>& LinkStack<T>::operator=(LinkStack &ls)
+	{
+		if (!this)
+		{
+			exit(ERROR);
+		}
+		if (this->base)
+		{
+			this->clearStack();
+		}
+		else
+		{
+			SNode<T> *base = new SNode<T>();
+			if (!base)
+			{
+				exit(ERROR);
+			}
+			base->next = NULL;
+			this->base = base;
+			this->top = this->base;
+			this->length = 0;
+			base = NULL;
+		}
+		SNode<T> *ls_top = ls.top;
+		while (ls_top->next)
+		{
+			ls_top = ls_top->next;
+			SNode<T> *newBase = new SNode<T>();
+			newBase->next = NULL;
+			newBase->data = ls_top->data;
+			this->base->next = newBase;
+			this->base = newBase;
+			newBase = NULL;
+		}
+		ls_top = NULL;
+		return *this;
+	}
 }
+#endif
 
 

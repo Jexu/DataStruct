@@ -1,16 +1,13 @@
-#pragma once
-#include<iostream>
-#include<malloc.h>
-using namespace std;
-
+#ifndef _LIST_STACK_C_H
+#define _LIST_STACK_C_H
 namespace ls_c
 {
-	const int ERROR = -1;
 	/*栈初始化大小*/
 #define INIT_STACK_SIZE  100
 	/*栈增量大小*/
 #define STACK_INCREASMENT  10
-	
+	const int ERROR = -1;
+
 	template<typename T>
 	struct ListStack
 	{
@@ -44,7 +41,7 @@ namespace ls_c
 
 	template<typename T>
 	/*获取当前栈顶的元素值*/
-	T getTop(ListStack<T> ls)
+	T getTop(const ListStack<T> &ls)
 	{
 		if (&ls == NULL)
 		{
@@ -75,6 +72,7 @@ namespace ls_c
 			ls.base = newBase;
 			ls.top = ls.base + ls.stackSize;
 			ls.stackSize += STACK_INCREASMENT;
+			newBase = NULL;
 		}
 		*ls.top++ = e;
 		ls.length++;
@@ -94,7 +92,7 @@ namespace ls_c
 		}
 		T e = *--ls.top;
 		ls.length--;
-		if (ls.top != ls.base && (ls.stackSize - (ls.top - ls.base + 1))%STACK_INCREASMENT == 0)
+		if (ls.top != ls.base && (ls.stackSize - (ls.top - ls.base + 1)) % STACK_INCREASMENT == 0)
 		{
 			T *newBase = (T *)realloc(ls.base, (ls.stackSize - STACK_INCREASMENT)*sizeof(T));
 			if (!newBase)
@@ -107,6 +105,7 @@ namespace ls_c
 			ls.base = newBase;
 			ls.top = ls.base + distance;
 			ls.stackSize -= STACK_INCREASMENT;
+			newBase = NULL;
 		}
 		return e;
 	}
@@ -123,8 +122,18 @@ namespace ls_c
 		{
 			exit(ERROR);
 		}
+		if (ls.stackSize > INIT_STACK_SIZE)
+		{
+			T *newBase = (T *)realloc(ls.base, INIT_STACK_SIZE*(sizeof(T)));
+			if (!newBase)
+			{
+				exit(ERROR);
+			}
+			ls.base = newBase;
+		}
 		ls.top = ls.base;
 		ls.length = 0;
 		ls.stackSize = INIT_STACK_SIZE;
 	}
 }
+#endif
